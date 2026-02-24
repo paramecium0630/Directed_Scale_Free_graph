@@ -1,0 +1,44 @@
+
+---
+
+# ✅ .gitignore（Fortran 研究專案建議版本）
+
+```gitignore
+# Compiled binaries
+*.exe
+*.out
+*.a
+*.so
+*.dll
+
+# Object files
+*.o
+*.obj
+
+# Fortran module files
+*.mod
+
+# Intel compiler artifacts
+*.dSYM
+*.optrpt
+
+# Debug / temporary
+*.log
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Data outputs (if you generate large graphs)
+output/
+*.dat
+*.txt
+
+# Backup files
+*~
+
