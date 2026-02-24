@@ -23,10 +23,10 @@ xout = np.array(sorted(distribution_out.keys())) # 取出 distribution_out 的 k
 yout = np.array([distribution_out[k] for k in xout]) # 取出 distribution_out 裡面 key = k 的值，並轉成 numpy array
 
 # 移除 k=0（因為 log(0) 不存在）
-mask = (xin > 80) & (xin < 300)
+mask = (xin > 40) & (xin < 200)
 xin = xin[mask]
 yin = yin[mask]
-mask = (xout > 80) & (xout < 300)
+mask = (xout > 40) & (xout < 200)
 xout = xout[mask]
 yout = yout[mask]
 # 轉成 log

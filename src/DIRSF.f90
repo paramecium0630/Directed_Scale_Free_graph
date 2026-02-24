@@ -1,21 +1,27 @@
 program DIRSF
     implicit none
-    integer :: i, j, n, m
+    integer :: i, j, it, n, m
     integer, allocatable :: adj_matrix(:,:), indegree(:), outdegree(:)
+    integer, allocatable :: iter_indeg(:), iter_outdeg(:)
     real(8) :: alpha, beta, gamma, delta_in, delta_out
     real(8) :: density, c1, c2, exponent_in, exponent_out
+    real(8), allocatable :: pk_in(:), pk_out(:)
     real(8) :: time1, time2
-    integer :: N_final, E_final
+    integer :: N_final, E_final, kmax_in, kmax_out, niter
 
     open(10, file="output/directed_scale_free_graph.txt", status="replace")
     open(11, file="output/degree.txt", status="replace")
+    !open(12, file="output/indegree_distribution.txt", status="replace")
+    !open(13, file="output/outdegree_distribution.txt", status="replace")
+
+    niter = 50 ! number of iterations to average over
 
     ! Initialize parameters for directed scale-free graph
-    N_final = 20000 ! target number of vertices
-    E_final = 800000 ! target number of edges
-    alpha = 0.6d0
-    beta = 0.0d0
-    gamma = 0.4d0
+    N_final = 10000 ! target number of vertices
+    E_final = 200000 ! target number of edges
+    alpha = 1d0/3
+    beta = 1d0/3
+    gamma = 1d0/3
     delta_in = 1.0d0
     delta_out = 1.0d0
 
@@ -35,39 +41,119 @@ program DIRSF
     print *, "delta_out=", delta_out
     print *, "Expected in-degree exponent=", exponent_in
     print *, "Expected out-degree exponent=", exponent_out
+    print *, repeat("-", 50)
 
     allocate(adj_matrix(N_final, N_final))    
-    allocate(indegree(N_final))
-    allocate(outdegree(N_final))
+    allocate(indegree(N_final), outdegree(N_final))
 
-    call cpu_time(time1)
+    allocate(pk_in(N_final), pk_out(N_final))
+    allocate(iter_indeg(N_final*niter), iter_outdeg(N_final*niter)) ! for collecting degree data across iterations
+
     call random_seed() ! initialize RNG
+
+    do it = 1, niter
+
+    print *, "Iteration ", it
+    call cpu_time(time1)
+    
     call grow_directed_scale_free(N_final, E_final, alpha, beta, gamma, delta_in, delta_out, &
         & n, m, indegree, outdegree, adj_matrix)
     call cpu_time(time2)
     print*, 'Generating time (seconds): ', time2 - time1
 
-    call cpu_time(time1)
-    ! Write adjacency matrix to file
-    do i = 1, n
-        do j = 1, n
-            if (adj_matrix(i, j) == 1) then
-                write(10, *) i, j
-            end if
-        end do
-    end do
-    call cpu_time(time2)
-    print*, 'write time (seconds): ', time2 - time1
+    iter_indeg((it-1)*N_final+1:it*N_final) = indegree(1:N_final)
+    iter_outdeg((it-1)*N_final+1:it*N_final) = outdegree(1:N_final)
 
-    ! Write degree information to file
-    do i = 1, n
-        write(11, '(I0, 1X, I0)') outdegree(i), indegree(i)
-    end do
+    enddo
+
+    call degree_distribution(N_final, iter_indeg, iter_outdeg, pk_in, pk_out, kmax_in, kmax_out)
+
+    print*, "Max in-degree: ", kmax_in
+    print*, "Max out-degree: ", kmax_out
+
+    ! call cpu_time(time1)
+    ! ! Write adjacency matrix to file
+    ! do i = 1, n
+    !     do j = 1, n
+    !         if (adj_matrix(i, j) == 1) then
+    !             write(10, *) i, j
+    !         end if
+    !     end do
+    ! end do
+    ! call cpu_time(time2)
+    ! print*, 'write time (seconds): ', time2 - time1
+
+    ! ! Write degree information to file
+    ! do i = 1, n
+    !     write(11, '(I0, 1X, I0)') indegree(i), outdegree(i)
+    ! end do
 
     close(10)
     close(11)
+    close(12)
+    close(13)
 
 end program DIRSF
+
+subroutine degree_distribution(N, indegree, outdegree, pk_in, pk_out, kmax_in, kmax_out)
+
+    implicit none
+    integer, intent(in) :: N
+    integer, intent(in) :: indegree(N), outdegree(N)
+
+    real(8), allocatable, intent(out) :: pk_in(:), pk_out(:)
+    integer, intent(out) :: kmax_in, kmax_out
+
+    integer :: i
+    integer, allocatable :: hist_in(:), hist_out(:)
+
+    open(12, file="output/indegree_distribution.txt", status="replace")
+    open(13, file="output/outdegree_distribution.txt", status="replace")
+
+    !--------------------------------------
+    ! 1. Max degree
+    !--------------------------------------
+    kmax_in  = maxval(indegree)
+    kmax_out = maxval(outdegree)
+
+    allocate(hist_in(0:kmax_in))
+    allocate(hist_out(0:kmax_out))
+    hist_in  = 0
+    hist_out = 0
+
+    !--------------------------------------
+    ! 2. Count
+    !--------------------------------------
+    do i = 1, N
+        hist_in(indegree(i))   = hist_in(indegree(i))   + 1
+        hist_out(outdegree(i)) = hist_out(outdegree(i)) + 1
+    end do
+
+    !--------------------------------------
+    ! 3. Normalize
+    !--------------------------------------
+    allocate(pk_in(0:kmax_in))
+    allocate(pk_out(0:kmax_out))
+
+    do i = 0, kmax_in
+        pk_in(i) = dble(hist_in(i)) / dble(N)
+    end do
+
+    do i = 0, kmax_out
+        pk_out(i) = dble(hist_out(i)) / dble(N)
+    end do
+
+    do i = 1, kmax_in
+        write(12, *) i, pk_in(i)
+    end do
+
+    do i = 1, kmax_out
+        write(13, *) i, pk_out(i)
+    end do
+
+    deallocate(hist_in, hist_out)
+
+end subroutine degree_distribution
 
 subroutine grow_directed_scale_free(N_final, E_final, alpha, beta, gamma, delta_in, delta_out, &
     & n, t, indeg, outdeg, adj_matrix)
