@@ -1,6 +1,6 @@
 program DIRSF
     implicit none
-    integer :: i, j, it, n, m
+    integer :: i, j, it
     integer, allocatable :: adj_matrix(:,:), indegree(:), outdegree(:)
     integer, allocatable :: iter_indeg(:), iter_outdeg(:)
     real(8) :: alpha, beta, gamma, delta_in, delta_out
@@ -58,10 +58,9 @@ program DIRSF
         call cpu_time(time1)
 
         call grow_directed_scale_free(N_final, alpha, beta, gamma, delta_in, delta_out, &
-            & n, m, indegree, outdegree, adj_matrix)
+            & indegree, outdegree, adj_matrix)
 
         call cpu_time(time2)
-        print *, '  Vertices: ', n, '  Edges: ', m
         print *, '  Generating time (seconds): ', time2 - time1
 
         ! n is guaranteed == N_final (method A terminates on vertex count)
@@ -141,7 +140,7 @@ end subroutine degree_distribution
 !===========================================================================
 
 subroutine grow_directed_scale_free(N_final, alpha, beta, gamma, delta_in, delta_out, &
-    & n, t, indeg, outdeg, adj_matrix)
+    & indeg, outdeg, adj_matrix)
 !-----------------------------------------------------------------------
 ! Directed scale-free graph growth (no self-loops, no multiple edges).
 !
@@ -171,19 +170,15 @@ subroutine grow_directed_scale_free(N_final, alpha, beta, gamma, delta_in, delta
 ! OUTPUT:
 !   adj_matrix(i,j)      : adjacency matrix; (i,j)=1 means edge j -> i
 !   outdeg(i), indeg(i)  : degree arrays consistent with adj_matrix
-!   n                    : final vertex count (== N_final)
-!   t                    : final edge count (random)
-!
 ! NOTE: RNG must be initialized by caller via random_seed().
 !-----------------------------------------------------------------------
     implicit none
     integer, intent(in)    :: N_final
     real(8), intent(in)    :: alpha, beta, gamma, delta_in, delta_out
-    integer, intent(inout) :: n, t
     integer, intent(inout) :: adj_matrix(N_final, N_final)
     integer, intent(inout) :: outdeg(N_final), indeg(N_final)
 
-    integer :: v, w, newv
+    integer :: v, w, newv, n, t
     real(8) :: r
     integer :: attempts, max_attempts
 
