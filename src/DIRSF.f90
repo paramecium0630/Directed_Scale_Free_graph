@@ -20,11 +20,11 @@ program DIRSF
     ! Method A: terminate when n == N_final (vertex count is the clock).
     ! Edge count m is a random variable; expected value ~ N_final / (alpha+gamma).
     N_final   = 30000   ! target number of vertices
-    alpha     = 0.1d0
-    beta      = 0.8d0
+    alpha     = 0.4d0
+    beta      = 0.5d0
     gamma     = 0.1d0
     delta_in  = 1.0d0
-    delta_out = 1.0d0
+    delta_out = 0.0d0
 
     c1 = (alpha + beta) / (1d0 + delta_in*(alpha + gamma))
     c2 = (beta + gamma) / (1d0 + delta_out*(alpha + gamma))
@@ -273,7 +273,7 @@ contains
 
         call random_number(r)
         r = r * total
-
+        
         cumulative = 0d0
         do i = 1, n
             cumulative = cumulative + indeg(i) + delta_in
