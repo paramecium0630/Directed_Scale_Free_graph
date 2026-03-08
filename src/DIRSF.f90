@@ -14,18 +14,18 @@ program DIRSF
     !open(12, file="output/indegree_distribution.txt", status="replace")
     !open(13, file="output/outdegree_distribution.txt", status="replace")
 
-    niter = 30 ! number of iterations to average over
+    niter = 20 ! number of iterations to average over
 
     ! Initialize parameters for directed scale-free graph
     ! Method A: terminate when n == N_final (vertex count is the clock).
     ! Edge count is a random variable; expected value ~ m_links*N_final/(alpha+gamma).
-    N_final   = 10000   ! target number of vertices
-    alpha     = 0.25d0
-    beta      = 0.5d0
-    gamma     = 0.25d0
+    N_final   = 20000   ! target number of vertices
+    alpha     = 0.15d0
+    beta      = 0.80d0
+    gamma     = 0.05d0
     delta_in  = 1.0d0
-    delta_out = 5.0d0
-    m_links   = 8
+    delta_out = 1.0d0
+    m_links   = 10
     !!! test 
     c1 = real(m_links,8) * (alpha + beta) / (real(m_links,8) + delta_in*(alpha + gamma))
     c2 = real(m_links,8) * (beta + gamma) / (real(m_links,8) + delta_out*(alpha + gamma))
