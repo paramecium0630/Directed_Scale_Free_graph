@@ -9,11 +9,16 @@ pk_in = datain[:, 1]
 kout = dataout[:, 0]
 pk_out = dataout[:, 1]
 
+min_kin = min(kin)
+min_kout = min(kout)
+max_kin = max(kin)
+max_kout = max(kout)
+
 # 移除 k=0（因為 log(0) 不存在）
-mask = (pk_in > 0) & (kin > 10) & (kin < 150)
+mask = (pk_in > 0) & (kin > min_kin*10) & (kin < max_kin*0.4)
 kin = kin[mask]
 pk_in = pk_in[mask]
-mask = (pk_out > 0) & (kout > 10) & (kout < 150)
+mask = (pk_out > 0) & (kout > min_kout*15) & (kout < max_kout*0.8)
 kout = kout[mask]
 pk_out = pk_out[mask]
 
@@ -33,26 +38,22 @@ print(f"In-degree distribution slope: {-slopein:.4f}")
 print(f"Out-degree distribution slope: {-slopeout:.4f}")
 
 # plot
-plt.figure(figsize=(12, 5))
-plt.subplot(1, 2, 1)
-plt.scatter(kin, pk_in, label="In-Degree Distribution")
+plt.figure(figsize=(8, 6))
+plt.scatter(kin, pk_in, label="In-Degree Distribution", alpha=0.8)
+plt.scatter(kout, pk_out, label="Out-Degree Distribution", alpha=0.8)
+plt.tick_params(axis='both', which='major', labelsize=14)  # 主刻度字體
 plt.xscale('log')
 plt.yscale('log')
-plt.xlabel("In-Degree (k)")
-plt.ylabel("P(k)")
-plt.title("In-Degree Distribution")
-fit_pk_in = 10**(coeffsin[1] + coeffsin[0] * log_kin)
-plt.plot(kin, fit_pk_in, color='red')
-plt.legend()
-plt.subplot(1, 2, 2)            
-plt.scatter(kout, pk_out, label="Out-Degree Distribution")
-plt.xscale('log')
-plt.yscale('log')   
-plt.xlabel("Out-Degree (k)")
-plt.ylabel("P(k)")
-plt.title("Out-Degree Distribution")
-fit_pk_out = 10**(coeffsout[1] + coeffsout[0] * log_kout)
-plt.plot(kout, fit_pk_out, color='red')
+plt.xlabel("Degree (k)", fontsize=20)
+plt.ylabel("P(k)", fontsize=20)
+plt.title("In-Degree and Out-Degree Distribution")
+
+fit_pk_in = 10 ** (coeffsin[1] + coeffsin[0] * log_kin)
+fit_pk_out = 10 ** (coeffsout[1] + coeffsout[0] * log_kout)
+plt.plot(kin, fit_pk_in, color='tab:blue', linestyle='--', label=r"$\gamma_{{in}}$ = {:.2f}".format(-slopein))
+plt.plot(kout, fit_pk_out, color='tab:orange', linestyle='--', label=r"$\gamma_{{out}}$ = {:.2f}".format(-slopeout))
+
 plt.legend()
 plt.tight_layout()
+plt.savefig("figure/degree_distribution.png", dpi=300)
 plt.show()
