@@ -31,6 +31,8 @@ program DIRSF
     exponent_in  = 1d0 + 1d0/c1
     exponent_out = 1d0 + 1d0/c2
 
+    !!! test
+
     print *, "N_final=", N_final
     print *, "Expected edges ~", nint(real(N_final) / (alpha + gamma))
     print *, "Network density ~ 1/(alpha+gamma)", "= ", real(N_final) / (alpha + gamma) / real(N_final*(N_final-1))
