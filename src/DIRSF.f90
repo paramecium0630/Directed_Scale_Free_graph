@@ -26,7 +26,7 @@ program DIRSF
     delta_in  = 1.0d0
     delta_out = 5.0d0
     m_links   = 8
-
+    !!! test 
     c1 = real(m_links,8) * (alpha + beta) / (real(m_links,8) + delta_in*(alpha + gamma))
     c2 = real(m_links,8) * (beta + gamma) / (real(m_links,8) + delta_out*(alpha + gamma))
     exponent_in  = 1d0 + 1d0/c1
